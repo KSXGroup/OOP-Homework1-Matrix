@@ -26,7 +26,7 @@ namespace sjtu
 		{
 			matRow = n;
 			matColumn = m;
-			if(data) delete [] data;
+			//if(data) delete [] data;
 			data = new T[n * m];
 			for(int i = 0; i < matRow * matColumn; ++i){
 				data[i] = _init;
@@ -47,7 +47,7 @@ namespace sjtu
 		{
 			matRow = o.matRow;
 			matColumn = o.matColumn;
-			if(data) delete [] data;
+			//if(data) delete [] data;
 			data = new T[matRow * matColumn];
 			for(int i = 0;i < matRow ; ++i){
 				for(int j = 0; j < matColumn; ++j){
@@ -94,34 +94,36 @@ namespace sjtu
 		{
 			matRow = o.rowLength();
 			matColumn = o.columnLength();
+			T *tpt = new T[matRow * matColumn];
 			if(data != nullptr){
 				delete [] data;
 			}
-			data = new T[matRow * matColumn];
+			data = tpt;
 			for(int i = 0;i < matRow ; ++i){
 				for(int j = 0; j < matColumn; ++j){
-					data[i * matColumn + j] = T(o(i,j));
+					(*this)(i, j) = T(o(i,j));
 				}
 			}
 			return *this;
 		}
 		
-		Matrix(Matrix &&o) noexcept
+		/*Matrix(Matrix &&o) noexcept
 		{
-			matRow = o.matRow;
-			matColumn = o.matColumn;
-			data = o.data;
+			matRow = std::move(o.matRow);
+			matColumn = std::move(o.matColumn);
+			data = std::move(o.data);
 			o.data = nullptr;
 		}
 		
 		Matrix &operator=(Matrix &&o) noexcept
 		{
-			matRow = o.matRow;
-			matColumn = o.matColumn;
-			data = o.data;
+			//std::cout << "move" << std::endl;
+			matRow = std::move(o.matRow);
+			matColumn = std::move(o.matColumn);
+			data = std::move(o.data);
 			o.data = nullptr;
 			return *this;
-		}
+		}*/
 		
 		~Matrix(){
 			//std::cerr << matRow <<" dec "<< matColumn << std::endl;
@@ -248,12 +250,12 @@ namespace sjtu
 			}
 		}
 		
-		Matrix operator-() const
+		Matrix<T> operator-() const
 		{
 			if(matRow != rowLength() || matColumn != columnLength()){
 				throw_invalid_msg();
 			}
-			Matrix tmp(*this);
+			Matrix<T> tmp = *this;
 			for(int i = 0; i < matRow ; ++i){
 				for(int j = 0; j < matColumn; ++j){
 					tmp(i, j) = -data[i * matColumn + j];
@@ -491,10 +493,10 @@ namespace sjtu
 	template <class T, class U>
 	auto operator*(const Matrix<T> &mat, const U &x)
 	{
-		if(mat.rowLength() == 0 || mat.columnLength() == 0){
+		/*if(mat.rowLength() == 0 || mat.columnLength() == 0){
 			Matrix<decltype(mat(0,0) * x)> t;
 			return t;
-		}
+		}*/
 		Matrix<decltype(mat(0,0) * x)> tmp(mat);
 		for(int i = 0;i < tmp.rowLength(); ++i){
 			for(int j = 0;j < tmp.columnLength(); ++j){
