@@ -109,6 +109,9 @@ namespace sjtu
 		
 		Matrix(Matrix &&o) noexcept
 		{
+			if(this != &o){
+				if(data) delete[] data;
+			}
 			matRow = std::move(o.matRow);
 			matColumn = std::move(o.matColumn);
 			data = std::move(o.data);
@@ -117,9 +120,8 @@ namespace sjtu
 		
 		Matrix &operator=(Matrix &&o) noexcept
 		{
-			//std::cout << "move" << std::endl;
-			if(data != o.data){
-				delete[] data;
+			if(this != &o){
+				if(data) delete[] data;
 			}
 			matRow = std::move(o.matRow);
 			matColumn = std::move(o.matColumn);
@@ -129,11 +131,10 @@ namespace sjtu
 		}
 		
 		~Matrix(){
-			//std::cerr << matRow <<" dec "<< matColumn << std::endl;
 			if(data != nullptr){
 				delete[] data;
+				data = nullptr;
 			}
-			data = nullptr;
 			matRow = 0;
 			matColumn = 0;
 			for(int i = 0; i < subs.size(); ++i){
@@ -148,6 +149,11 @@ namespace sjtu
 			matColumn = il.begin() -> size();
 			data = new T[matRow * matColumn];
 			for(auto rowIt = il.begin(); rowIt != il.end(); ++rowIt){
+				if(rowIt -> size() != matColumn){
+					delete[] data;
+					data = nullptr;
+					throw_invalid_msg();
+				}
 				for(auto columnIt = rowIt -> begin(); columnIt != rowIt -> end(); ++columnIt){
 					data[pos++] = *columnIt;
 				}
@@ -165,12 +171,54 @@ namespace sjtu
 		
 		void resize(size_t _n, size_t _m, T _init = T())
 		{
-			//TODO
+			if(_n < 0 || _m < 0){
+				throw_invalid_msg();
+			}
+			else if(_m * _n == 0){
+				if(data) delete[] data;
+				matRow = _n;
+				matColumn = _m;
+			}
+			if(!data){
+				data = new T[_n * _m];
+				matRow = _n;
+				matColumn = _m;
+				for(int i = 0;i < _n * _m; ++i){
+					data[i] = _init;
+				}
+			}
+			if(_n * _m == matRow * matColumn){
+				matRow = _n;
+				matColumn = _m;
+			}
+			else if(_n * _m < matRow * matColumn){
+				T *tpt = new T[_n * _m];
+				for(int i = 0; i < _n * _m; ++i){
+					tpt[i] = data[i];
+				}
+				matRow = _n;
+				matColumn = _m;
+				if(data) delete[] data;
+				data = tpt;
+			}
+			else{
+				T *tpt = new T[_n * _m];
+				for(int i = 0; i < matRow * matColumn; ++i){
+					tpt[i] = data[i];
+				}
+				for(int i = matRow * matColumn; i < _m * _n; ++i){
+					tpt[i] = _init;
+				}
+				matRow = _n;
+				matColumn = _m;
+				if(data) delete[] data;
+				data = tpt;
+			}
 		}
 		
 		void resize(std::pair<size_t, size_t> sz, T _init = T())
 		{
-			//TODO
+			resize(sz.first, sz.second, _init);
 		}
 		
 		std::pair<size_t, size_t> size() const
@@ -189,16 +237,25 @@ namespace sjtu
 	public:
 		const T &operator()(size_t i, size_t j) const
 		{
+			if(i < 0 || i > matRow - 1 || j < 0 || j > matColumn - 1){
+				throw_invalid_msg();
+			}
 			return data[i * matColumn + j];
 		}
 		
 		T &operator()(size_t i, size_t j)
 		{
+			if(i < 0 || i > matRow - 1 || j < 0 || j > matColumn - 1){
+				throw_invalid_msg();
+			}
 			return data[i * matColumn + j];
 		}
 		
 		Matrix<T> row(size_t i) const
 		{
+			if(i > matRow - 1 || i < 0){
+				throw_invalid_msg();
+			}
 			Matrix<T> tmp(1, matColumn);
 			for(int k = 0; k < matColumn; ++k){
 				tmp(0, k) = (*this)(i, k);
@@ -208,6 +265,9 @@ namespace sjtu
 		
 		Matrix<T> column(size_t i) const
 		{
+			if(i > matColumn - 1 || i < 0){
+				throw_invalid_msg();
+			}
 			Matrix<T> tmp(matRow, 1);
 			for(int k = 0; k < matRow; ++k){
 				tmp(k, 0) = (*this)(k, i);
