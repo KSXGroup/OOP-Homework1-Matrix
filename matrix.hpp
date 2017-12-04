@@ -107,7 +107,7 @@ namespace sjtu
 			return *this;
 		}
 		
-		/*Matrix(Matrix &&o) noexcept
+		Matrix(Matrix &&o) noexcept
 		{
 			matRow = std::move(o.matRow);
 			matColumn = std::move(o.matColumn);
@@ -118,12 +118,15 @@ namespace sjtu
 		Matrix &operator=(Matrix &&o) noexcept
 		{
 			//std::cout << "move" << std::endl;
+			if(data != o.data){
+				delete[] data;
+			}
 			matRow = std::move(o.matRow);
 			matColumn = std::move(o.matColumn);
 			data = std::move(o.data);
 			o.data = nullptr;
 			return *this;
-		}*/
+		}
 		
 		~Matrix(){
 			//std::cerr << matRow <<" dec "<< matColumn << std::endl;
