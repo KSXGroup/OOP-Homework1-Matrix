@@ -26,7 +26,6 @@ namespace sjtu
 		{
 			matRow = n;
 			matColumn = m;
-			//if(data) delete [] data;
 			data = new T[n * m];
 			for(int i = 0; i < matRow * matColumn; ++i){
 				data[i] = _init;
@@ -178,6 +177,7 @@ namespace sjtu
 				if(data) delete[] data;
 				matRow = _n;
 				matColumn = _m;
+				return;
 			}
 			if(!data){
 				data = new T[_n * _m];
@@ -186,10 +186,12 @@ namespace sjtu
 				for(int i = 0;i < _n * _m; ++i){
 					data[i] = _init;
 				}
+				return;
 			}
 			if(_n * _m == matRow * matColumn){
 				matRow = _n;
 				matColumn = _m;
+				return;
 			}
 			else if(_n * _m < matRow * matColumn){
 				T *tpt = new T[_n * _m];
@@ -200,6 +202,7 @@ namespace sjtu
 				matColumn = _m;
 				if(data) delete[] data;
 				data = tpt;
+				return;
 			}
 			else{
 				T *tpt = new T[_n * _m];
@@ -213,6 +216,7 @@ namespace sjtu
 				matColumn = _m;
 				if(data) delete[] data;
 				data = tpt;
+				return;
 			}
 		}
 		
@@ -594,11 +598,13 @@ namespace sjtu
 			throw_invalid_msg();
 		}
 		else{
-			Matrix<decltype(a(0,0) * b(0,0))> tmp(a.rowLength(), b.columnLength());
+			Matrix<decltype(U() * V())> tmp(a.rowLength(), b.columnLength());
 			for(int i = 0;i < tmp.rowLength(); ++i){
-				for(int j = 0;j < tmp.columnLength(); ++j){
-					for(int k = 0; k < a.columnLength(); ++k){
-						tmp(i, j) += a(i, k) * b(k, j);
+				for(int k = 0; k < a.columnLength(); ++k){
+					if(a(i ,k) != 0){
+						for(int j = 0;j < tmp.columnLength(); ++j){
+							tmp(i, j) += a(i, k) * b(k, j);
+						}
 					}
 				}
 			}
